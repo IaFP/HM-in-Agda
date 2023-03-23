@@ -23,3 +23,7 @@ and Yi 1998). Available for reference as algorithms. No metatheory is formalized
 
 - Arthur Charguéraud. The locally nameless representation. J. Autom. Reason., 49
   (3):363–408, 2012. doi: 10.1007/s10817-011-9225-2
+
+- John C. Reynolds. The meaning of types from intrinsic to extrinsic semantics.
+  BRICS Report Series, 7(32), Jun. 2000. doi: 10.7146/brics.v7i32.20167. URL
+  https: //tidsskrift.dk/brics/article/view/20167
