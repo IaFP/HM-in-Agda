@@ -29,8 +29,7 @@ open import Data.Sum
 open import Function
 
 -- mine
-import AssocList ℕ _≟_  as AL
-open AL
+open import AssocList ℕ _≟_  as AL
 
 --------------------------------------------------------------------------------
 -- Syntax for implementation of Algorithm 𝒲 and Algorithm ℳ, following Lee and
@@ -60,13 +59,11 @@ Vars = List Var
 
 -- N.B.
 --   - We omit recursive functions for simplicity.
+
 --   - Algorithm 𝒲 (below) may be given nonsensical expressions and contexts.
---     We extend our type system with the bottom type ⊥, so that failures in 𝒲
---     are representable as
---         (λ _ → ⊥ , ⊥)
---     Further, we may represent "empty" substitutions and typing environments
---     as the constant functions mapping to ⊥. This technique is more or less
---     standard, e.g., Reynonds (2000).
+--     We extend our type system with the bottom type ⊥, which represents any
+--     failure. This technique is more or less standard (e.g. Reynonds (2000)),
+--     and saves us the hassle of working within the Either monad.
 
 data Expr : Set where
   tt    : Expr
