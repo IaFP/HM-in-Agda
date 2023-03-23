@@ -156,6 +156,10 @@ subst't S (τ `→ τ') = subst't S τ `→ subst't S τ'
 subst'Γ : Subst → TypeEnv → TypeEnv
 subst'Γ S Γ = AL.map (subst S) Γ
 
+--------------------------------------------------------------------------------
+-- Substitution over substitutions, e.g.,
+-- x ↦ ⊤ in the environment (Γ , x ⦂ ⊥)
+
 -- --------------------------------------------------------------------------------
 -- Generalization, a là Jones (1995) and Damas and Milner (1982).
 
