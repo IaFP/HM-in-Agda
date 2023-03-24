@@ -60,7 +60,7 @@ Vars = List Var
 
 --------------------------------------------------------------------------------
 -- Syntax
-
+--
 -- N.B.
 --   - We omit recursive functions for simplicity.
 --   - We use ⊥ to represent failure broadly. So, our type system has the rule.
@@ -91,11 +91,15 @@ data Scheme : Set where
   `∀ : (T : Vars) → (τ : Type) → Scheme
 
 --------------------------------------------------------------------------------
--- Typing Environments.
+-- Typing Assignments.
 --
+-- N.B.
+--   - Typing assignments *look* the same as typing environments, but actually
+--     map *type vars* to *type schemes*. An environment maps term vars to type
+--     schemes.
 
-TypeEnv : Set
-TypeEnv = AssocList Scheme
+TypeAss : Set
+TypeAss = AssocList Scheme
 
 --------------------------------------------------------------------------------
 -- Substitutions.
@@ -121,7 +125,7 @@ ftv't (` α) = α ∷ []
 ftv't (τ₁ `→ τ₂) = ftv't τ₁ ++ ftv't τ₂
 ftv't ⊥ = []
 
-ftv'Γ : TypeEnv → Vars
+ftv'Γ : TypeAss → Vars
 ftv'Γ ε = []
 ftv'Γ (α ↦ σ , Γ) = ftv σ ++ (ftv'Γ Γ)
 
@@ -158,7 +162,7 @@ freshen as = go as as
     go : Vars → Vars → Subst
     go [] all = ε
     go (x ∷ xs) all = let β = fresh all in (x ↦ (` β) , (go xs (β ∷ all)))
-new : TypeEnv → Type
+new : TypeAss → Type
 new Γ = ` (fresh (dom Γ))
 
 --------------------------------------------------------------------------------
@@ -178,7 +182,7 @@ subst't S (τ `→ τ') = subst't S τ `→ subst't S τ'
 -- --------------------------------------------------------------------------------
 -- Substitution over typing environments.
 
-subst'Γ : Subst → TypeEnv → TypeEnv
+subst'Γ : Subst → TypeAss → TypeAss
 subst'Γ S Γ = AL.map (subst S) Γ
 
 --------------------------------------------------------------------------------
@@ -195,5 +199,5 @@ subst'S S₁ (α ↦ τ , S₂) = α ↦ subst't S₁ τ , subst'S S₁ S₂
 -- --------------------------------------------------------------------------------
 -- Generalization, a là Jones (1995) and Damas and Milner (1982).
 
-gen : TypeEnv → Type → Scheme
+gen : TypeAss → Type → Scheme
 gen Γ τ = `∀ ((ftv't τ) ╲ ftv'Γ Γ) τ

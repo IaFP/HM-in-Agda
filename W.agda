@@ -40,7 +40,7 @@ open import Unification
 idS : Subst
 idS = ε
 
-𝒲 : TypeEnv → Expr → Subst × Type
+𝒲 : TypeAss → Expr → Subst × Type
 𝒲 Γ tt =  (idS , ⊤)
 𝒲 Γ (` x) with (Γ ∋[ x ] (§ ⊥))
 ... | § τ    = idS , τ

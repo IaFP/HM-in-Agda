@@ -18,7 +18,13 @@ open import Data.Maybe
 -- Unification (𝒰).
 --
 
+{-# TERMINATING #-}
 𝒰 : Type → Type → Maybe Subst
+𝒰 (τ₁ `→ τ₂) (υ₁ `→ υ₂) with 𝒰 τ₁ υ₁
+... | nothing = nothing
+... | just S₁ with 𝒰 (subst't S₁ τ₂) (subst't S₁ υ₂)
+...   | just S₂ = just (subst'S S₂ S₁)
+...   | nothing = nothing
 𝒰 ⊤ ⊤ = just ε
 𝒰 (` α) τ@(` β) with α ≟ β
 ... | yes p = just ε
@@ -28,9 +34,4 @@ open import Data.Maybe
 𝒰 (` α) τ with occurs α τ
 ... | yes p = nothing
 ... | no p = just [ α ↦ τ ]
-
-𝒰 (τ₁ `→ τ₂) (υ₁ `→ υ₂) with 𝒰 τ₁ υ₁ | 𝒰 τ₂ υ₂
-... | nothing | _ = nothing
-... | _ | nothing = nothing
-... | just S₁ | just S₂ = just (subst'S S₂ S₁)
 𝒰 _ _ = nothing
