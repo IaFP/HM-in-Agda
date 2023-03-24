@@ -1,7 +1,22 @@
+## Algorithms 𝒲 and ℳ in Agda
 Implementation of Hindley-Milner type inference algorithms 𝒲 (Milner 1978) and ℳ (Lee
-and Yi 1998). Available for reference as algorithms. No metatheory is formalized.
+and Yi 1998). Available for reference as algorithms.
 
-## Bibliography
+## Notice
+
+This project is to aid my own understanding of these algorithms. I chose Agda
+because I like it. **I do not claim any formalization of metatheory**. In
+particular, I use a named representation (with names ∈ ℕ) under the [Barendregt
+convention](https://cs.stackexchange.com/questions/69323/barendregts-variable-convention-what-does-it-mean).
+
+I suspect formalization would not be terribly novel or difficult, but one would
+first need to switch variable representation to either DeBruijn or locally
+nameless (see Charguéraud (2012)). I would recommend locally nameless, as
+algorithms 𝒲 and ℳ require the generation of "new" type variables, which the
+locally nameless style provides via "atoms".
+
+
+## References
 
 - Robin Milner. A theory of type polymorphism in programming. Journal of
   Computer and System Sciences, pages 348–375, 1978

@@ -7,6 +7,8 @@ open import Relation.Nullary
   using (¬_; Dec; yes; no)
 open import Relation.Nullary.Decidable
   hiding (map)
+open import Relation.Nullary.Negation
+  renaming (contraposition to contra)
 
 open import Data.String using (String)
 open import Data.Nat
@@ -16,6 +18,7 @@ open import Data.List.Extrema.Nat
 open import Data.List.Relation.Unary.Any
   hiding (map)
 import Data.List.Membership.DecPropositional as Membership
+open import Data.List.Membership.Propositional.Properties
 open Membership _≟_
 
 open import Data.Product
@@ -49,7 +52,8 @@ open import AssocList ℕ _≟_  as AL
 --    This makes implementation easiest, but likely would need to be changed to
 --    either DeBruijn or Locally Nameless (see Charguéraud (2012)) before
 --    formalizing any metatheory. I personally would recommend locally nameless,
---    as make use of the decidable equality and freshness of the naturals.
+--    as we require freshness and decidable equality of variable representation
+--    -- precisely what is necessary for LN.
 
 Var = ℕ
 Vars = List Var
@@ -59,16 +63,20 @@ Vars = List Var
 
 -- N.B.
 --   - We omit recursive functions for simplicity.
-
---   - Algorithm 𝒲 (below) may be given nonsensical expressions and contexts.
---     We extend our type system with the bottom type ⊥, which represents any
---     failure. This technique is more or less standard (e.g. Reynonds (2000)),
---     and saves us the hassle of working within the Either monad.
+--   - We use ⊥ to represent failure broadly. So, our type system has the rule.
+--
+--     ----------
+--     Γ ⊢ e : ⊥
+--
+--     for any (possibly ill-formed) expression e. This is an infelicity of the
+--     mechanization adopted for convenience -- it saves the hassle (in some
+--     cases) of using the Maybe monad or of handling e.g. failed lookups more
+--     appropriately.
 
 data Expr : Set where
   tt    : Expr
   `    : (x : Var) → Expr
-  ƛ    : (x : Var) → (e : Expr) → Expr
+  `λ    : (x : Var) → (e : Expr) → Expr
   _·_  : (e₁ : Expr) → (e₂ : Expr) → Expr
   Let_:=_In_ : (x : Var) → (e₁ : Expr) → (e₂ : Expr) → Expr
 
@@ -76,7 +84,7 @@ data Type : Set where
   ⊤    : Type
   `    : (α : Var) → Type
   _`→_ : (τ₁ : Type) → (τ₂ : Type) → Type
-  ⊥ : Type
+  ⊥    : Type
 
 data Scheme : Set where
   §  : (τ : Type) → Scheme
@@ -98,6 +106,7 @@ Subst = AssocList Type
 --------------------------------------------------------------------------------
 -- Free type variables in types, schemes, and environments.
 
+-- Set difference.
 _╲_ : List Var → List Var → List Var
 xs ╲ ys = filter (_∈? ys) xs
 
@@ -114,7 +123,23 @@ ftv't ⊥ = []
 
 ftv'Γ : TypeEnv → Vars
 ftv'Γ ε = []
-ftv'Γ (α ⦂ σ , Γ) = ftv σ ++ (ftv'Γ Γ)
+ftv'Γ (α ↦ σ , Γ) = ftv σ ++ (ftv'Γ Γ)
+
+--------------------------------------------------------------------------------
+-- Occurrence.
+-- Does α occur free in type τ?
+
+occurs : (α : Var) → (τ : Type) → Dec (α ∈ ftv't τ)
+occurs α ⊤ = no (λ ())
+occurs α (` β) with α ≟ β
+... | yes α≡β rewrite α≡β = yes (here refl)
+... | no a≠β = no (λ { (here Α≡β) → a≠β Α≡β})
+occurs α (τ₁ `→ τ₂) with occurs α τ₁ | occurs α τ₂
+... | yes p | _ = yes (∈-++⁺ˡ p)
+... | _ | yes p = yes ( (∈-++⁺ʳ  (ftv't τ₁) p))
+... | no p₁ | no p₂ = no (contra (∈-++⁻ (ftv't τ₁)) λ { (left x) → p₁ x ; (right x) → p₂ x })
+occurs α ⊥ = no (λ ())
+
 --------------------------------------------------------------------------------
 -- Freshening, i.e.,
 --   freshen Γ (∀αᵢ.τ) := [βᵢ/αᵢ]τ
@@ -132,7 +157,7 @@ freshen as = go as as
     -- so that we do not produce duplicates.
     go : Vars → Vars → Subst
     go [] all = ε
-    go (x ∷ xs) all = let β = fresh all in x ⦂ ` β , (go xs (β ∷ all))
+    go (x ∷ xs) all = let β = fresh all in (x ↦ (` β) , (go xs (β ∷ all)))
 new : TypeEnv → Type
 new Γ = ` (fresh (dom Γ))
 
@@ -157,8 +182,15 @@ subst'Γ : Subst → TypeEnv → TypeEnv
 subst'Γ S Γ = AL.map (subst S) Γ
 
 --------------------------------------------------------------------------------
--- Substitution over substitutions, e.g.,
--- x ↦ ⊤ in the environment (Γ , x ⦂ ⊥)
+-- Substitution within a substitution, e.g.,
+--    β ↦ ζ ∘ (α ↦ (β → β))
+-- should yield the substitution
+--    (β ↦ ζ , α ↦ (ζ → ζ))
+-- i.e., we eagerly apply the substitution on the left.
+
+subst'S : Subst → Subst → Subst
+subst'S S₁ ε = S₁
+subst'S S₁ (α ↦ τ , S₂) = α ↦ subst't S₁ τ , subst'S S₁ S₂
 
 -- --------------------------------------------------------------------------------
 -- Generalization, a là Jones (1995) and Damas and Milner (1982).
