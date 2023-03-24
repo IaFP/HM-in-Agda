@@ -33,4 +33,3 @@ print (`∀ T τ) = "∀ {" ++ (intersperse "," (map name T)) ++ "} " ++ print't
 print't ⊤ = "⊤"
 print't (` α) = name α
 print't (τ `→ τ') = "(" ++ print't τ ++ " → " ++ print't τ' ++ ")"
-print't ⊥ = "⊥"

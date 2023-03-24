@@ -5,7 +5,9 @@ open import Data.String hiding (show)
 open import Data.Nat.Show
 open import Data.List hiding (_++_)
 open import Data.Nat as N
-open import Data.Product using (_,_)
+open import Data.Product
+  using (_,_)
+  renaming (proj₁ to fst ; proj₂ to snd)
 
 open import Syntax
 open import AssocList ℕ N._≟_ as AL
@@ -19,12 +21,13 @@ open import Print
 id : Expr
 id = `λ 0 (` 0)
 
-hmm =
-  let
-    (S , τ) = 𝒲 ε id
-  in gen (subst'Γ S ε) τ
+empty : TypeAss
+empty = ε
 
-pfft = print hmm
+ty = 𝒲 empty id
+S = fst ty
+τ = snd ty
+
 --------------------------------------------------------------------------------
 
 

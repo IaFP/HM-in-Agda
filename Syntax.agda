@@ -63,15 +63,6 @@ Vars = List Var
 --
 -- N.B.
 --   - We omit recursive functions for simplicity.
---   - We use ⊥ to represent failure broadly. So, our type system has the rule.
---
---     ----------
---     Γ ⊢ e : ⊥
---
---     for any (possibly ill-formed) expression e. This is an infelicity of the
---     mechanization adopted for convenience -- it saves the hassle (in some
---     cases) of using the Maybe monad or of handling e.g. failed lookups more
---     appropriately.
 
 data Expr : Set where
   tt    : Expr
@@ -84,7 +75,6 @@ data Type : Set where
   ⊤    : Type
   `    : (α : Var) → Type
   _`→_ : (τ₁ : Type) → (τ₂ : Type) → Type
-  ⊥    : Type
 
 data Scheme : Set where
   §  : (τ : Type) → Scheme
@@ -123,7 +113,6 @@ ftv (`∀ T τ) = ftv't τ ╲ T
 ftv't ⊤ = []
 ftv't (` α) = α ∷ []
 ftv't (τ₁ `→ τ₂) = ftv't τ₁ ++ ftv't τ₂
-ftv't ⊥ = []
 
 ftv'Γ : TypeAss → Vars
 ftv'Γ ε = []
@@ -142,7 +131,6 @@ occurs α (τ₁ `→ τ₂) with occurs α τ₁ | occurs α τ₂
 ... | yes p | _ = yes (∈-++⁺ˡ p)
 ... | _ | yes p = yes ( (∈-++⁺ʳ  (ftv't τ₁) p))
 ... | no p₁ | no p₂ = no (contra (∈-++⁻ (ftv't τ₁)) λ { (left x) → p₁ x ; (right x) → p₂ x })
-occurs α ⊥ = no (λ ())
 
 --------------------------------------------------------------------------------
 -- Freshening, i.e.,
@@ -175,8 +163,7 @@ subst S (§ τ)     = § (subst't S τ)
 subst S (`∀ T τ) = `∀ T (subst't S τ)
 
 subst't S ⊤ = ⊤
-subst't S ⊥ = ⊥
-subst't S (` x) = S ∋[ x ] ⊥
+subst't S (` x) = S ∋[ x ] (` x)
 subst't S (τ `→ τ') = subst't S τ `→ subst't S τ'
 
 -- --------------------------------------------------------------------------------

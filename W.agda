@@ -40,9 +40,11 @@ open import Unification
 idS : Subst
 idS = ε
 
+-- TODO.
+-- Need to switch this to Maybe (Subst × Type)
 𝒲 : TypeAss → Expr → Subst × Type
-𝒲 Γ tt =  (idS , ⊤)
-𝒲 Γ (` x) with (Γ ∋[ x ] (§ ⊥))
+𝒲 Γ tt =  idS , ⊤
+𝒲 Γ (` x) with (Γ ∋[ x ] (§ (` x)))
 ... | § τ    = idS , τ
 ... | σ@(`∀ T τ) = idS , subst't (freshen (T ++ dom Γ)) τ
 𝒲 Γ (`λ x e) = let
@@ -53,7 +55,7 @@ idS = ε
 ... | β | (S₁ , τ₁) with 𝒲 (subst'Γ S₁ Γ) e₂
 ...   | (S₂ , τ₂) with 𝒰 (subst't S₂ τ₁) (τ₂ `→ β)
 ...     | just S₃ = S₃ ∘' (S₂ ∘' S₁) , subst't S₃ β
-...     | nothing = ε , ⊥
+...     | nothing = ε , ⊤
 𝒲 Γ (Let x := e₁ In e₂) =
   let
     (S₁ , τ₁) = 𝒲 Γ e₁

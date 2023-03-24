@@ -34,4 +34,7 @@ open import Data.Maybe
 𝒰 (` α) τ with occurs α τ
 ... | yes p = nothing
 ... | no p = just [ α ↦ τ ]
+𝒰 τ (` α) with occurs α τ
+... | yes p = nothing
+... | no p = just [ α ↦ τ ]
 𝒰 _ _ = nothing
