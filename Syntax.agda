@@ -102,35 +102,48 @@ Subst = AssocList Type
 
 -- Set difference.
 _╲_ : List Var → List Var → List Var
-xs ╲ ys = filter (_∈? ys) xs
+xs ╲ ys = filter (_∉? ys) xs
+
+dedup = deduplicate _≟_
 
 ftv : Scheme → Vars
 ftv't : Type → Vars
 
 ftv (§ τ) = ftv't τ
-ftv (`∀ T τ) = ftv't τ ╲ T
+ftv (`∀ T τ) = ftv't τ ╲ (dedup T)
 
 ftv't ⊤ = []
 ftv't (` α) = α ∷ []
-ftv't (τ₁ `→ τ₂) = ftv't τ₁ ++ ftv't τ₂
+ftv't (τ₁ `→ τ₂) = dedup (ftv't τ₁ ++ ftv't τ₂)
 
 ftv'Γ : TypeAss → Vars
 ftv'Γ ε = []
-ftv'Γ (α ↦ σ , Γ) = ftv σ ++ (ftv'Γ Γ)
+ftv'Γ (α ↦ σ , Γ) = dedup (ftv σ ++ (ftv'Γ Γ))
 
 --------------------------------------------------------------------------------
 -- Occurrence.
 -- Does α occur free in type τ?
+open import Data.Bool
 
-occurs : (α : Var) → (τ : Type) → Dec (α ∈ ftv't τ)
-occurs α ⊤ = no (λ ())
-occurs α (` β) with α ≟ β
-... | yes α≡β rewrite α≡β = yes (here refl)
-... | no a≠β = no (λ { (here Α≡β) → a≠β Α≡β})
+occurs : (α : Var) → (τ : Type) → Bool
+occurs α ⊤ = false
+occurs α (` β) with α Data.Nat._≟_ β
+... | yes α≡β  = true
+... | no a≠β = false
 occurs α (τ₁ `→ τ₂) with occurs α τ₁ | occurs α τ₂
-... | yes p | _ = yes (∈-++⁺ˡ p)
-... | _ | yes p = yes ( (∈-++⁺ʳ  (ftv't τ₁) p))
-... | no p₁ | no p₂ = no (contra (∈-++⁻ (ftv't τ₁)) λ { (left x) → p₁ x ; (right x) → p₂ x })
+... | true | _ = true
+... | _ | true = true
+... | false | false = false
+
+-- occurs : (α : Var) → (τ : Type) → Dec (α ∈ ftv't τ)
+-- occurs α ⊤ = no (λ ())
+-- occurs α (` β) with α ≟ β
+-- ... | yes α≡β rewrite α≡β = yes (here refl)
+-- ... | no a≠β = no (λ { (here Α≡β) → a≠β Α≡β})
+-- occurs α (τ₁ `→ τ₂) with occurs α τ₁ | occurs α τ₂
+-- ... | yes p | _ = yes (∈-++⁺ˡ p)
+-- ... | _ | yes p = yes ( (∈-++⁺ʳ  (ftv't τ₁) p))
+-- ... | no p₁ | no p₂ = no (contra (∈-++⁻ (ftv't τ₁)) λ { (left x) → p₁ x ; (right x) → p₂ x })
 
 --------------------------------------------------------------------------------
 -- Freshening, i.e.,
