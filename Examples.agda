@@ -1,6 +1,5 @@
 module Examples where
 
-
 open import Data.String hiding (show)
 open import Data.Nat.Show
 open import Data.List hiding (_++_)

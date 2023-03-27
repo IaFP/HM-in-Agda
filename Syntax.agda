@@ -10,6 +10,7 @@ open import Relation.Nullary.Decidable
 open import Relation.Nullary.Negation
   renaming (contraposition to contra)
 
+open import Data.Bool using (Bool ; true ; false ; _∨_)
 open import Data.String using (String)
 open import Data.Nat
 open import Data.List
@@ -123,21 +124,16 @@ ftv'Γ (α ↦ σ , Γ) = dedup (ftv σ ++ (ftv'Γ Γ))
 --------------------------------------------------------------------------------
 -- Occurrence.
 -- Does α occur free in type τ?
-open import Data.Bool
 
 occurs : (α : Var) → (τ : Type) → Bool
 occurs α ⊤ = false
-occurs α (` β) with α Data.Nat._≟_ β
-... | yes α≡β  = true
-... | no a≠β = false
-occurs α (τ₁ `→ τ₂) with occurs α τ₁ | occurs α τ₂
-... | true | _ = true
-... | _ | true = true
-... | false | false = false
+occurs α (` β) = α ≡ᵇ β
+occurs α (τ₁ `→ τ₂) = (occurs α τ₁) ∨ (occurs α τ₂)
+
 
 -- occurs : (α : Var) → (τ : Type) → Dec (α ∈ ftv't τ)
 -- occurs α ⊤ = no (λ ())
--- occurs α (` β) with α ≟ β
+-- occurs α (` β) with α Dat.Nat._≟_ β
 -- ... | yes α≡β rewrite α≡β = yes (here refl)
 -- ... | no a≠β = no (λ { (here Α≡β) → a≠β Α≡β})
 -- occurs α (τ₁ `→ τ₂) with occurs α τ₁ | occurs α τ₂
