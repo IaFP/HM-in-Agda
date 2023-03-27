@@ -49,6 +49,7 @@ dom (v ↦ _ , Γ) = v ∷ (dom Γ)
 map : ∀ {A B : Set} → (A → B) → AssocList A → AssocList B
 map f ε = ε
 map f (k ↦ v , xs) = k ↦ (f v) , (map f xs)
+
 --------------------------------------------------------------------------------
 -- "Composition" of assoc lists -- i.e., merge, with precedence given to left.
 -- (Named "composition" to align with the use case: composition of

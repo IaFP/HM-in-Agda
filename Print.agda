@@ -18,7 +18,7 @@ lookup [] _ = nothing
 lookup (x ∷ xs) zero = just x
 lookup (x ∷ xs) (suc n) = lookup xs n
 
-chars = "a" ∷ "b" ∷ "c" ∷ "d" ∷ "e" ∷ "f" ∷ "g" ∷ [] 
+chars = "a" ∷ "b" ∷ "c" ∷ "d" ∷ "e" ∷ "f" ∷ "g" ∷ "h" ∷ "i" ∷ "j" ∷ "k" ∷ "l" ∷ "m" ∷ "n" ∷ [] 
 name : Var → String
 name α with lookup chars α
 ... | just n = n

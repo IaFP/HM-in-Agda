@@ -99,6 +99,12 @@ Subst : Set
 Subst = AssocList Type
 
 --------------------------------------------------------------------------------
+-- Lift a substitution up to a typing assignment.
+
+lift : Subst → TypeAss
+lift = AL.map §
+
+--------------------------------------------------------------------------------
 -- Free type variables in types, schemes, and environments.
 
 -- Set difference.
